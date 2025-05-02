@@ -98,7 +98,19 @@ func (service *service) findMatchingReplyAction(msgEvent *MessageEvent, logger *
 }
 
 func (service *service) findMatchingMessageAction(msgEvent *MessageEvent, logger *slog.Logger) {
-	msg := strings.ToLower(msgEvent.Content.Body)
+	// ─── PREFIX FILTER ────────────────────────────────────────────────
+	const prefix = "!rem"
+
+	raw := strings.TrimSpace(msgEvent.Content.Body)
+	if !strings.HasPrefix(strings.ToLower(raw), prefix) {
+		return // ignore messages without the prefix
+	}
+
+	// Strip the prefix so downstream regexes still see “remind me …”
+	raw = strings.TrimSpace(raw[len(prefix):])
+	msgEvent.Content.Body = raw
+	msg := strings.ToLower(raw)
+	// ──────────────────────────────────────────────────────────────────
 	for i := range service.config.MessageActions {
 		if service.config.MessageActions[i].Selector().MatchString(msg) {
 			logger.Info("moving event to message action", "action.name", service.config.MessageActions[i].Name())
