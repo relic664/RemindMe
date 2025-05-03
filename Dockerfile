@@ -1,5 +1,5 @@
 FROM golang:1.24.2-alpine3.21 as builder
-ARG VERSION="development"
+ARG VERSION=2.1.6
 
 WORKDIR /run
 
